@@ -1,0 +1,8 @@
+com/yossi/capitalGains/Stock.class
+com/yossi/capitalGains/AppConfig.class
+com/yossi/capitalGains/StockPortfolioService.class
+com/yossi/capitalGains/CapitalGainsApplication.class
+com/yossi/capitalGains/CapitalGainsService.class
+com/yossi/capitalGains/Main.class
+com/yossi/capitalGains/StockValueResponse.class
+com/yossi/capitalGains/CapitalGainsController.class

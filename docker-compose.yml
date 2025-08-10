@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  nginx:
+    build: 
+      context: ./NGINX
+    ports:
+      - "80:80"  # Exposes NGINX on host port 80
+    depends_on:
+      - stocks1a
+      - stocks1b
+      - stocks2
+    networks:
+      - stock_network
+
+  stocks1a:
+    build:
+      context: ./stocks1
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+    depends_on:
+      db:
+        condition: service_healthy  # Ensures it waits for db to be healthy
+    networks:
+      - stock_network
+    ports:
+      - "5001:8000"  # Host port 5001 maps to Container port 8000 (stocks1a)
+    restart: on-failure
+
+  stocks1b:
+    build:
+      context: ./stocks1
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+    depends_on:
+      db:
+        condition: service_healthy  # Ensures it waits for db to be healthy
+    networks:
+      - stock_network
+    ports:
+      - "5004:8000"  # Host port 5002 maps to Container port 8000 (stocks1b)
+    restart: on-failure
+
+  stocks2:
+    build:
+      context: ./stocks2
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+    depends_on:
+      db:
+        condition: service_healthy  # Ensures it waits for db to be healthy
+    networks:
+      - stock_network
+    ports:
+      - "5002:8000"  # Host port 5002 maps to Container port 8000 (stocks2)
+    restart: on-failure
+
+  db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=Ani1Yotam!
+      - MYSQL_DATABASE=stockPortfolioDB
+    ports:
+      - "3306:3306"  # Exposes MySQL DB on host port 3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+    networks:
+      - stock_network
+
+  capital-gains:
+    build:
+      context: ./capitalGains
+    depends_on:
+      - stocks1a
+      - stocks1b
+      - stocks2
+    environment:
+      - STOCKS_API_URL=http://stocks1a:8000/stocks
+    networks:
+      - stock_network
+    ports:
+      - "5003:8080"  
+
+networks:
+  stock_network:
+    driver: bridge
+
